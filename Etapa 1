@@ -1,1 +1,44 @@
+import csv
+import logging
+
+# Configuração do logger para registrar erros em um arquivo de log
+logging.basicConfig(filename='error.log', level=logging.ERROR)
+
+def process_transactions(input_file, output_file, threshold):
+    try:
+        # Abrir o arquivo de entrada CSV
+        with open(input_file, mode='r', newline='') as csvfile:
+            reader = csv.DictReader(csvfile)
+            # Criar uma lista para armazenar as transações acima do limite
+            high_transactions = []
+            # Repetir sobre as linhas do arquivo CSV
+            for row in reader:
+                # Verificar se o valor da transação é superior ao limite
+                if float(row['Valor da Transação']) > threshold:
+                    high_transactions.append(row)
+        
+        # Salvar as transações identificadas em um novo arquivo CSV
+        with open(output_file, mode='w', newline='') as csvfile:
+            fieldnames = ['Nome do Cliente', 'Valor da Transação', 'Data da Transação']
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            writer.writeheader()
+            for transaction in high_transactions:
+                writer.writerow(transaction)
+    
+    except FileNotFoundError as e:
+        # Registrar erro de arquivo não encontrado
+        logging.error(f"Arquivo não encontrado: {e}")
+        print("Arquivo não encontrado. Verifique o caminho e tente novamente.")
+    except Exception as e:
+        # Registrar outros erros inesperados
+        logging.error(f"Erro inesperado: {e}")
+        print("Ocorreu um erro inesperado. Por favor, verifique o arquivo de log para mais informações.")
+
+# Definir o caminho do arquivo de entrada e saída, e o limite de transação
+input_file = 'transacoes.csv'
+output_file = 'transacoes_altas.csv'
+threshold = 1000
+
+# Chamar a função para processar as transações
+process_transactions(input_file, output_file, threshold)
 
